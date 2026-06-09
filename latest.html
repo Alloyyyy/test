@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAOCC / Message Center Routing Slip System</title>
+<style>
+  :root{
+    --ink:#1c1f23;
+    --navy:#474c54;
+    --navy-deep:#2c3036;
+    --accent:#7d838b;          /* neutral steel-gray accent */
+    --paper:#edecea;
+    --paper-2:#ffffff;
+    --line:#cccccc;
+    --line-strong:#2b2b2b;
+    --muted:#6c6c6c;
+    --danger:#595959;
+    --ok:#4a4f57;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 8px 28px -14px rgba(30,30,30,.35);
+    --serif:Georgia,"Times New Roman",'Iowan Old Style',serif;
+    --sans:ui-sans-serif,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"Cascadia Mono","Consolas",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:
+      linear-gradient(0deg,rgba(60,60,60,.03),rgba(60,60,60,.03)),
+      var(--paper);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.45;
+  }
+
+  /* ---------- Top bar ---------- */
+  header.app{
+    background:linear-gradient(180deg,var(--navy) 0%,var(--navy-deep) 100%);
+    color:#f3f3f3;
+    border-bottom:3px solid var(--accent);
+    padding:18px 26px 14px;
+  }
+  .brand{display:flex;align-items:center;gap:16px;max-width:1180px;margin:0 auto}
+  .seal{
+    width:46px;height:46px;border-radius:50%;
+    border:2px solid var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--serif);font-weight:700;font-size:15px;letter-spacing:.5px;
+    color:var(--accent);flex:none;
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.08),transparent);
+  }
+  .brand h1{
+    font-family:var(--serif);font-weight:600;
+    font-size:20px;margin:0;letter-spacing:.4px;
+  }
+  .brand .sub{font-size:12px;color:#c3c3c5;margin-top:2px;letter-spacing:.6px;text-transform:uppercase}
+  .offline-pill{
+    margin-left:auto;font-size:11px;letter-spacing:.7px;text-transform:uppercase;
+    border:1px solid rgba(255,255,255,.25);border-radius:999px;
+    padding:5px 12px;color:#cfcfcf;display:flex;align-items:center;gap:7px;
+  }
+  .offline-pill .dot{width:7px;height:7px;border-radius:50%;background:#bfc3c8;box-shadow:0 0 0 3px rgba(191,195,200,.18)}
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{
+    background:var(--navy-deep);
+    padding:0 26px;
+  }
+  .tabs-inner{max-width:1180px;margin:0 auto;display:flex;gap:2px}
+  .tab{
+    appearance:none;border:0;background:transparent;cursor:pointer;
+    color:#a8a8aa;font-family:var(--sans);font-size:13.5px;font-weight:600;
+    letter-spacing:.4px;padding:13px 20px;border-bottom:3px solid transparent;
+    transition:.15s;display:flex;align-items:center;gap:8px;
+  }
+  .tab:hover{color:#e8e8ea}
+  .tab.active{color:#fff;border-bottom-color:var(--accent)}
+  .tab .count{
+    font-size:11px;background:rgba(255,255,255,.12);border-radius:999px;
+    padding:1px 8px;font-weight:700;
+  }
+
+  main{max-width:1180px;margin:0 auto;padding:28px 26px 70px}
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--paper-2);border:1px solid var(--line);
+    border-radius:10px;box-shadow:var(--shadow);
+  }
+  .card .card-h{
+    padding:16px 22px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:12px;
+  }
+  .card .card-h h2{
+    font-family:var(--serif);font-size:17px;margin:0;font-weight:600;color:var(--navy-deep);
+  }
+  .card .card-h .hint{font-size:12.5px;color:var(--muted);margin-left:auto}
+  .card-b{padding:22px}
+
+  /* ---------- Form ---------- */
+  .grid-top{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  label.fld{display:block}
+  label.fld .lab{
+    font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);
+    font-weight:700;margin-bottom:6px;display:block;
+  }
+  input[type=text],input[type=date],textarea,select{
+    width:100%;font-family:var(--sans);font-size:14px;color:var(--ink);
+    background:#fafafa;border:1px solid var(--line);border-radius:7px;
+    padding:9px 11px;transition:.15s;
+  }
+  textarea{resize:vertical;min-height:84px;line-height:1.5}
+  input:focus,textarea:focus,select:focus{
+    outline:0;border-color:var(--navy);background:#fff;
+    box-shadow:0 0 0 3px rgba(71,76,84,.15);
+  }
+  .section-label{
+    font-family:var(--serif);font-size:14px;font-weight:700;color:var(--navy-deep);
+    margin:26px 0 10px;display:flex;align-items:center;gap:10px;
+  }
+  .section-label::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* routing rows table */
+  .routing{width:100%;border-collapse:collapse}
+  .routing th{
+    font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);
+    font-weight:700;text-align:left;padding:0 8px 7px;
+  }
+  .routing td{padding:0 6px 8px;vertical-align:top}
+  .routing td:first-child,.routing th:first-child{padding-left:0}
+  .routing input{padding:7px 9px;font-size:13.5px}
+  .row-no{
+    width:26px;text-align:center;color:var(--muted);font-size:12px;font-weight:700;
+    padding-top:9px !important;
+  }
+  .x-row{
+    appearance:none;border:1px solid var(--line);background:#fff;color:var(--danger);
+    width:30px;height:34px;border-radius:7px;cursor:pointer;font-size:16px;line-height:1;
+    transition:.12s;
+  }
+  .x-row:hover{background:#ededed;border-color:var(--danger)}
+  .add-row{
+    appearance:none;border:1px dashed var(--navy);background:#efeff0;color:var(--navy);
+    border-radius:7px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:13px;margin-top:4px;
+  }
+  .add-row:hover{background:#e6e6e8}
+
+  .codes-help{
+    margin-top:8px;background:#f4f4f5;border:1px solid var(--line);border-radius:8px;
+    padding:12px 14px;font-size:12px;color:var(--ink);
+    columns:2;column-gap:26px;
+  }
+  .codes-help b{color:var(--navy-deep)}
+  .codes-help div{break-inside:avoid;padding:1.5px 0}
+
+  /* ---------- Buttons ---------- */
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;align-items:center}
+  .btn{
+    appearance:none;border:1px solid transparent;border-radius:8px;cursor:pointer;
+    font-family:var(--sans);font-size:14px;font-weight:600;letter-spacing:.2px;
+    padding:11px 20px;transition:.15s;display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-primary{background:var(--navy);color:#fff}
+  .btn-primary:hover{background:var(--navy-deep)}
+  .btn-gold{background:var(--accent);color:#fff}
+  .btn-gold:hover{filter:brightness(.94)}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--navy);color:var(--navy)}
+  .btn-danger{background:#fff;border-color:var(--danger);color:var(--danger)}
+  .btn-danger:hover{background:var(--danger);color:#fff}
+  .btn-sm{padding:6px 12px;font-size:12.5px;border-radius:7px}
+  .spacer{flex:1}
+  .editing-flag{
+    font-size:12.5px;color:var(--accent);font-weight:700;display:none;align-items:center;gap:6px;
+  }
+
+  /* ---------- Records ---------- */
+  .records-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:0}
+  .search{position:relative;flex:1;min-width:220px}
+  .search input{padding-left:34px}
+  .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5}
+  table.recs{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.recs th{
+    text-align:left;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;
+    color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:2px solid var(--line);
+  }
+  table.recs td{padding:11px 12px;border-bottom:1px solid #e7e7e7;vertical-align:middle}
+  table.recs tr:last-child td{border-bottom:0}
+  table.recs tr:hover td{background:#f6f6f6}
+  .ctrl-no{font-family:var(--mono);font-weight:600;color:var(--navy-deep)}
+  .rec-subj{font-weight:600}
+  .rec-meta{font-size:12px;color:var(--muted)}
+  .rec-actions{display:flex;gap:6px;justify-content:flex-end}
+  .empty{
+    text-align:center;padding:60px 20px;color:var(--muted);
+  }
+  .empty .big{font-family:var(--serif);font-size:18px;color:var(--navy-deep);margin-bottom:6px}
+
+  /* ---------- Toast ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:var(--navy-deep);color:#fff;padding:12px 20px;border-radius:9px;
+    font-size:13.5px;font-weight:600;box-shadow:0 12px 30px -10px rgba(0,0,0,.4);
+    opacity:0;pointer-events:none;transition:.25s;z-index:200;border-left:4px solid var(--accent);
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ---------- Modal (print preview) ---------- */
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(38,40,44,.55);backdrop-filter:blur(2px);
+    display:none;align-items:flex-start;justify-content:center;z-index:150;padding:30px 16px;overflow:auto;
+  }
+  .modal-bg.show{display:flex}
+  .modal{
+    background:#fff;border-radius:10px;max-width:880px;width:100%;box-shadow:0 30px 80px -20px rgba(0,0,0,.5);
+  }
+  .modal-h{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .modal-h h3{margin:0;font-family:var(--serif);font-size:16px;color:var(--navy-deep)}
+  .modal-body{padding:24px;background:#e8e8e8}
+  .modal-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+
+  /* ============================================================
+     THE SLIP  (used in preview + print)
+     ============================================================ */
+  .slip{
+    background:#fff;color:#000;font-family:"Segoe UI","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;
+    width:7.5in;max-width:100%;margin:0 auto;padding:0;
+    box-shadow:0 6px 24px -8px rgba(0,0,0,.3);
+  }
+  .slip .slip-pad{padding:.35in .4in .4in}
+  .slip-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:2px}
+  .slip-title{font-weight:700;font-size:13pt;letter-spacing:.5px;margin-right:24px;white-space:nowrap}
+  .slip-ctrl{display:flex;align-items:flex-end;gap:8px;flex:1}
+  .slip-ctrl .lbl{font-weight:700;font-size:11pt;white-space:nowrap;margin-right:6px}
+  .slip-ctrl .val{flex:1;border-bottom:1.4px solid #000;min-height:18px;font-size:11pt;padding:0 4px 2px;font-weight:600}
+  .slip-date{display:flex;align-items:flex-end;gap:6px;flex:none}
+  .slip-date .lbl{font-weight:700;font-size:11pt;white-space:nowrap}
+  .slip-date .val{border-bottom:1.4px solid #000;min-height:18px;min-width:96px;font-size:11pt;padding:0 6px 2px;font-weight:600;text-align:center;white-space:nowrap}
+  .slip-subj{display:flex;align-items:flex-end;gap:8px;margin:2px 0 10px}
+  .slip-subj .lbl{font-weight:700;font-size:11pt;margin-right:6px}
+  .slip-subj .val{flex:1;border-bottom:1.4px solid #000;min-height:18px;font-size:11pt;padding:0 4px 2px}
+
+  table.slip-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+  table.slip-tbl th,table.slip-tbl td{border:1px solid #000;padding:5px 6px;font-size:9.5pt;vertical-align:top}
+  table.slip-tbl thead th{text-align:center;font-weight:700;font-size:9.5pt;line-height:1.15}
+  .col-from{width:13%}.col-to{width:13%}.col-act{width:11%}.col-date{width:12%}.col-send{width:19%}.col-legend{width:32%}
+  table.slip-tbl td.cell{height:46px}
+  table.slip-tbl td.cell-send{vertical-align:bottom;text-align:center;padding-bottom:4px}
+  td.legend{font-size:8.6pt;line-height:1.55;vertical-align:top}
+  td.legend .lg{display:block}
+  td.remarks{font-weight:700;font-size:10pt}
+  td.remarks .rm-text{font-weight:400;font-size:9.5pt;display:block;margin-top:4px;white-space:pre-wrap;min-height:70px}
+
+  /* ---------- Print ---------- */
+  @media print{
+    body{background:#fff}
+    header.app,nav.tabs,main,#toast{display:none !important}
+    .modal-bg{position:static;display:block;background:#fff;padding:0;backdrop-filter:none}
+    .modal{box-shadow:none;max-width:none;border-radius:0}
+    .modal-h,.modal-foot{display:none !important}
+    .modal-body{background:#fff;padding:0}
+    .slip{box-shadow:none;width:100%}
+    /* Hide the log modal when printing the slip and vice versa */
+    .log-modal-bg:not(.show){display:none !important}
+    .modal-bg:not(.show){display:none !important}
+    /* When log modal is open, hide the slip modal */
+    .log-modal-bg.show ~ * .modal-bg,
+    body:has(.log-modal-bg.show) .modal-bg{display:none !important}
+    body:has(.modal-bg.show) .log-modal-bg{display:none !important}
+    @page{size:Letter portrait;margin:.5in}
+  }
+
+  /* ---------- Status block (form) ---------- */
+  .status-section{
+    margin-top:6px;
+    background:#f4f4f5;border:1px solid var(--line);border-radius:8px;padding:14px 18px;
+  }
+  .status-section .status-title{
+    font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);
+    font-weight:700;margin-bottom:10px;display:block;
+  }
+  .status-checks{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+  .status-check{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  .status-check input[type=checkbox]{
+    width:16px;height:16px;cursor:pointer;accent-color:var(--navy);flex-shrink:0;
+  }
+  .status-check .sc-label{font-size:13.5px;font-weight:600;color:var(--navy-deep)}
+  .status-check input:checked + .sc-label{color:var(--navy)}
+
+  /* status badges in records table */
+  .sbadge{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;
+  }
+  .sbadge-submitted{background:#e8eaf0;color:#3a4060}
+  .sbadge-revision{background:#fff3e0;color:#7a4f00}
+  .sbadge-signed{background:#e6f4ea;color:#1a5c2a}
+  .sbadge-dispatched{background:#e3f0fc;color:#0d4880}
+  .pending-days{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;
+    background:#fdecea;color:#7a1f1f;margin-left:6px;white-space:nowrap;
+  }
+  .pending-days-revision{
+    background:#fff3e0;color:#7a4f00;
+  }
+
+  /* ---------- Print Log Modal ---------- */
+  .log-modal-bg{
+    position:fixed;inset:0;background:rgba(38,40,44,.55);backdrop-filter:blur(2px);
+    display:none;align-items:flex-start;justify-content:center;z-index:160;padding:30px 16px;overflow:auto;
+  }
+  .log-modal-bg.show{display:flex}
+  .log-modal{
+    background:#fff;border-radius:10px;max-width:600px;width:100%;box-shadow:0 30px 80px -20px rgba(0,0,0,.5);
+  }
+  .log-modal .modal-h{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .log-modal .modal-h h3{margin:0;font-family:var(--serif);font-size:16px;color:var(--navy-deep)}
+  .log-modal .modal-body{padding:28px 32px;background:#e8e8e8}
+  .log-modal .modal-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+
+  /* The printable log sheet */
+  .log-sheet{
+    background:#fff;color:#000;
+    font-family:"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+    width:100%;max-width:540px;margin:0 auto;
+    padding:.45in .5in .55in;
+    box-shadow:0 6px 24px -8px rgba(0,0,0,.3);
+  }
+  .log-sheet-title{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:15pt;font-weight:700;letter-spacing:.5px;
+    text-align:center;border-bottom:2.5px solid #000;
+    padding-bottom:8px;margin-bottom:18px;text-transform:uppercase;
+  }
+  .log-sheet-subtitle{
+    font-size:9.5pt;text-align:center;color:#444;margin-top:-14px;margin-bottom:18px;letter-spacing:.4px;
+  }
+  .log-row{display:flex;align-items:flex-end;gap:10px;margin-bottom:18px}
+  .log-row .log-lbl{font-size:10pt;font-weight:700;white-space:nowrap;flex-shrink:0}
+  .log-row .log-val{flex:1;border-bottom:1.4px solid #000;min-height:20px;font-size:10.5pt;padding:0 4px 2px;font-weight:600}
+  .log-sig-block{margin-top:36px}
+  .log-sig-line{border-top:1.4px solid #000;margin-top:54px;width:72%;margin-left:auto;margin-right:auto}
+  .log-sig-label{text-align:center;font-size:9pt;color:#333;margin-top:5px;letter-spacing:.3px}
+  .log-printed-note{font-size:8.5pt;color:#666;text-align:center;margin-top:28px;border-top:1px dashed #ccc;padding-top:10px;}
+
+  @media print{
+    .log-modal-bg{position:static;display:block !important;background:#fff;padding:0;backdrop-filter:none}
+    .log-modal{box-shadow:none;max-width:none;border-radius:0}
+    .log-modal .modal-h,.log-modal .modal-foot{display:none !important}
+    .log-modal .modal-body{background:#fff;padding:0}
+    .log-sheet{box-shadow:none;width:100%;padding:.4in .5in}
+  }
+
+  @media(max-width:760px){
+    .grid-top{grid-template-columns:1fr}
+    .codes-help{columns:1}
+    .routing thead{display:none}
+    .status-checks{gap:14px}
+  }
+  /* ---------- Record cards ---------- */
+  .rec-card{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:9px;
+    margin-bottom:10px;overflow:hidden;
+  }
+  .rec-card-top{
+    display:flex;align-items:flex-start;gap:14px;padding:14px 16px 10px;
+  }
+  .rec-card-info{flex:1;min-width:0}
+  .rec-card-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+  .rec-card-meta{font-size:12.5px;color:var(--muted);display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+  .rec-card-status{
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    padding:9px 16px;background:#f7f7f8;border-top:1px solid var(--line);
+  }
+  .rec-status-lbl{font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);font-weight:700;flex-shrink:0}
+
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="brand">
+    <div class="seal">MC</div>
+    <div>
+      <h1>Routing Slip System</h1>
+      <div class="sub">PAOCC &middot; Message Center</div>
+    </div>
+    <div class="offline-pill"><span class="dot"></span> Offline &middot; This computer only</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <button class="tab active" id="tab-new" onclick="showTab('new')">＋ New Slip</button>
+    <button class="tab" id="tab-records" onclick="showTab('records')">▤ Records <span class="count" id="recCount">0</span></button>
+  </div>
+</nav>
+
+<main>
+  <!-- ===================== NEW SLIP ===================== -->
+  <section id="view-new">
+    <div class="card">
+      <div class="card-h">
+        <h2 id="formTitle">Create Routing Slip</h2>
+        <span class="hint">Fields left blank will print as empty lines on the slip</span>
+      </div>
+      <div class="card-b">
+        <div class="grid-top">
+          <label class="fld">
+            <span class="lab">PAOCC Control No.</span>
+            <input type="text" id="f_control" placeholder="e.g. 2026-0142">
+          </label>
+          <label class="fld">
+            <span class="lab">Date (top reference)</span>
+            <input type="text" id="f_topdate" placeholder="mm/dd/yyyy" maxlength="10">
+          </label>
+        </div>
+        <label class="fld" style="margin-top:16px">
+          <span class="lab">Subject</span>
+          <input type="text" id="f_subject" placeholder="Subject of the document being routed">
+        </label>
+
+        <div class="section-label">Routing Entries</div>
+        <table class="routing">
+          <thead>
+            <tr>
+              <th></th>
+              <th>From</th>
+              <th>To</th>
+              <th>Action Req. (codes)</th>
+              <th>Date</th>
+              <th>Sender's Name</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="rowsBody"></tbody>
+        </table>
+        <button class="add-row" onclick="addRow()">＋ Add routing row</button>
+
+        <div class="section-label">Action Code Reference</div>
+        <div class="codes-help" id="codesHelp"></div>
+
+        <div class="section-label">Additional Remarks</div>
+        <textarea id="f_remarks" placeholder="Any additional remarks..."></textarea>
+
+        <div class="actions">
+          <button class="btn btn-primary" onclick="saveSlip()">💾 Save Slip</button>
+          <button class="btn btn-gold" onclick="previewSlip()">🖨 Preview / Print</button>
+          <span class="editing-flag" id="editingFlag">● Editing existing slip</span>
+          <span class="spacer"></span>
+          <button class="btn btn-ghost" onclick="newSlip()">Clear / New</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== RECORDS ===================== -->
+  <section id="view-records" style="display:none">
+    <div class="card">
+      <div class="card-h">
+        <h2>Saved Routing Slips</h2>
+        <span class="hint">Stored locally on this computer</span>
+      </div>
+      <div class="card-b">
+        <div class="records-bar">
+          <div class="search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchBox" placeholder="Search by control no. or subject..." oninput="renderRecords()">
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="exportBackup()">⬇ Export backup</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">⬆ Import backup</button>
+          <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importBackup(event)">
+        </div>
+        <div id="recordsList" style="margin-top:16px"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ PREVIEW MODAL ============ -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-h">
+      <h3>Slip Preview</h3>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+    </div>
+    <div class="modal-body">
+      <div id="printArea"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨 Print this slip</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRINT LOG MODAL ============ -->
+<div class="log-modal-bg" id="logModal">
+  <div class="log-modal">
+    <div class="modal-h">
+      <h3>&#128221; Print Log</h3>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost btn-sm" onclick="closeLogModal()">Close</button>
+    </div>
+    <div class="modal-body">
+      <div id="logPrintArea"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeLogModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="window.print()">&#128438; Print Log</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+
+/* ---------- Action code legend (from the official slip) ---------- */
+const ACTION_CODES = [
+  ["01","Approval"],["02","Signature"],["03","Appropriate Action"],
+  ["04","Comment/Recommendation"],["05","For Study"],["06","Reply Direct to Writer"],
+  ["07","Retype/Redraft"],["08","Attn to HWI"],["09","Pls see me"],
+  ["10","Calendar/Remind me"],["11","Dispatch"],["12","Dissemination"],
+  ["13","Notation/Information"],["14","File"]
+];
+
+const STORE_KEY = "paocc_mc_routing_slips_v1";
+let editingId = null;
+
+/* ---------- Storage helpers ---------- */
+function loadAll(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch(e){ return []; }
+}
+function saveAll(arr){ localStorage.setItem(STORE_KEY, JSON.stringify(arr)); updateCount(); }
+function updateCount(){ document.getElementById('recCount').textContent = loadAll().length; }
+
+/* ---------- Utility ---------- */
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid(){ return 'rs_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7); }
+function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return iso;
+  return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'}); }
+/* Auto-format a routing-row date as mm/dd/yyyy while typing */
+function formatMDY(v){
+  var d=(v||'').replace(/\D/g,'').slice(0,8);
+  var out=d.slice(0,2);
+  if(d.length>2) out+='/'+d.slice(2,4);
+  if(d.length>4) out+='/'+d.slice(4,8);
+  return out;
+}
+/* Today's date as mm/dd/yyyy (used as the default top reference date) */
+function todayMDY(){
+  var d=new Date();
+  var mm=String(d.getMonth()+1).padStart(2,'0');
+  var dd=String(d.getDate()).padStart(2,'0');
+  return mm+'/'+dd+'/'+d.getFullYear();
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ---------- Tabs ---------- */
+function showTab(which){
+  document.getElementById('view-new').style.display    = which==='new'?'block':'none';
+  document.getElementById('view-records').style.display= which==='records'?'block':'none';
+  document.getElementById('tab-new').classList.toggle('active',which==='new');
+  document.getElementById('tab-records').classList.toggle('active',which==='records');
+  if(which==='records') renderRecords();
+}
+
+/* ---------- Build code reference panel ---------- */
+function buildCodesHelp(){
+  document.getElementById('codesHelp').innerHTML =
+    ACTION_CODES.map(([n,t])=>`<div><b>${n}</b> &ndash; ${esc(t)}</div>`).join('');
+}
+
+/* ---------- Routing rows ---------- */
+function rowHTML(data){
+  data = data||{};
+  return `<tr>
+    <td class="row-no"></td>
+    <td><input type="text" class="r-from" value="${esc(data.from)}"></td>
+    <td><input type="text" class="r-to" value="${esc(data.to)}"></td>
+    <td><input type="text" class="r-action" value="${esc(data.action)}" placeholder="e.g. 01,03"></td>
+    <td><input type="text" class="r-date" value="${esc(data.date)}" placeholder="mm/dd/yyyy" maxlength="10"></td>
+    <td><input type="text" class="r-sender" value="${esc(data.sender)}"></td>
+    <td><button class="x-row" title="Remove row" onclick="this.closest('tr').remove();renumber()">&times;</button></td>
+  </tr>`;
+}
+function addRow(data){
+  document.getElementById('rowsBody').insertAdjacentHTML('beforeend', rowHTML(data));
+  renumber();
+}
+function renumber(){
+  var trs = document.querySelectorAll('#rowsBody tr');
+  for(var i=0;i<trs.length;i++){ trs[i].querySelector('.row-no').textContent=(i+1); }
+}
+function readRows(){
+  var trs = document.querySelectorAll('#rowsBody tr'), out=[];
+  for(var i=0;i<trs.length;i++){
+    var tr=trs[i];
+    var r={
+      from:  tr.querySelector('.r-from').value.trim(),
+      to:    tr.querySelector('.r-to').value.trim(),
+      action:tr.querySelector('.r-action').value.trim(),
+      date:  tr.querySelector('.r-date').value.trim(),
+      sender:tr.querySelector('.r-sender').value.trim()
+    };
+    if(r.from||r.to||r.action||r.date||r.sender) out.push(r);
+  }
+  return out;
+}
+
+/* ---------- Status helpers ---------- */
+const STATUS_KEYS = ['submitted','revision','signed','dispatched'];
+
+function onStatusChange(changed){
+  // Mutual exclusivity: only one status active at a time
+  STATUS_KEYS.forEach(k=>{
+    var el = document.getElementById('st_'+k);
+    if(el) el.checked = (k === changed) ? el.checked : false;
+  });
+}
+
+function getStatusFromForm(){
+  for(var i=0;i<STATUS_KEYS.length;i++){
+    var el = document.getElementById('st_'+STATUS_KEYS[i]);
+    if(el && el.checked) return STATUS_KEYS[i];
+  }
+  return '';
+}
+
+function setStatusOnForm(status){
+  STATUS_KEYS.forEach(k=>{
+    var el = document.getElementById('st_'+k);
+    if(el) el.checked = (k === status);
+  });
+}
+
+function pendingDaysCount(s){
+  // Returns days count for 'submitted' (from submittedAt) and 'revision' (from revisionAt)
+  if(s.status === 'submitted'){
+    var ref = s.submittedAt || s.createdAt;
+    if(!ref) return null;
+    return Math.max(0, Math.floor((Date.now() - new Date(ref).getTime()) / 86400000));
+  }
+  if(s.status === 'revision'){
+    var ref = s.revisionAt || s.createdAt;
+    if(!ref) return null;
+    return Math.max(0, Math.floor((Date.now() - new Date(ref).getTime()) / 86400000));
+  }
+  return null;
+}
+
+function statusBadgeHTML(s){
+  var st = s.status || '';
+  var map = {
+    submitted: ['sbadge-submitted','Submitted'],
+    revision:  ['sbadge-revision','Under Revision'],
+    signed:    ['sbadge-signed','Signed'],
+    dispatched:['sbadge-dispatched','Dispatched']
+  };
+  if(!st || !map[st]) return '<span class="rec-meta">—</span>';
+  var cls = map[st][0], lbl = map[st][1];
+  var badge = '<span class="sbadge '+cls+'">'+lbl+'</span>';
+  if(st === 'submitted'){
+    var days = pendingDaysCount(s);
+    if(days !== null){
+      badge += '<span class="pending-days">&#128336; '+days+' day'+(days===1?'':'s')+' pending</span>';
+    }
+  }
+  return badge;
+}
+
+/* ---------- Gather / set form ---------- */
+function gather(){
+  var existingSlip = editingId ? (loadAll().find(x=>x.id===editingId)||{}) : {};
+  var newStatus = getStatusFromForm();
+  // Record the moment the slip first becomes 'submitted'
+  var submittedAt = existingSlip.submittedAt || null;
+  if(newStatus === 'submitted' && !submittedAt) submittedAt = new Date().toISOString();
+  // If changed away from submitted, keep submittedAt for history but won't show days
+  return {
+    id: editingId || uid(),
+    control: document.getElementById('f_control').value.trim(),
+    topdate: document.getElementById('f_topdate').value,
+    subject: document.getElementById('f_subject').value.trim(),
+    rows: readRows(),
+    remarks: document.getElementById('f_remarks').value,
+    status: newStatus,
+    submittedAt: submittedAt
+  };
+}
+function setForm(s){
+  document.getElementById('f_control').value = s.control||'';
+  document.getElementById('f_topdate').value = s.topdate||'';
+  document.getElementById('f_subject').value = s.subject||'';
+  document.getElementById('f_remarks').value = s.remarks||'';
+  document.getElementById('rowsBody').innerHTML='';
+  const rows = (s.rows && s.rows.length)? s.rows : [];
+  rows.forEach(r=>addRow(r));
+  while(document.querySelectorAll('#rowsBody tr').length < 5) addRow();
+  renumber();
+}
+
+/* ---------- New / blank slip with template defaults ---------- */
+function newSlip(){
+  editingId=null;
+  document.getElementById('editingFlag').style.display='none';
+  document.getElementById('formTitle').textContent='Create Routing Slip';
+  // template defaults: top date = today (mm/dd/yyyy) ; first row FROM = MC ; SENDER = Casera
+  setForm({ topdate: todayMDY(), rows:[{from:'MC',to:'',action:'',date:'',sender:'Casera'}] });
+  showTab('new');
+}
+
+/* ---------- Save ---------- */
+function saveSlip(){
+  const s = gather();
+  if(!s.control && !s.subject && s.rows.length===0){
+    toast('Nothing to save — add a control no., subject, or a routing row.'); return;
+  }
+  const all = loadAll();
+  const now = new Date().toISOString();
+  const idx = all.findIndex(x=>x.id===s.id);
+  if(idx>=0){ s.createdAt=all[idx].createdAt; s.updatedAt=now; all[idx]=s; }
+  else { s.createdAt=now; s.updatedAt=now; all.unshift(s); }
+  saveAll(all);
+  editingId = s.id;
+  document.getElementById('editingFlag').style.display='flex';
+  document.getElementById('formTitle').textContent='Edit Routing Slip';
+  toast(idx>=0?'Slip updated.':'Slip saved to this computer.');
+}
+
+/* ---------- Build the printable slip markup ---------- */
+function slipMarkup(s){
+  const rows = (s.rows&&s.rows.length)?s.rows.slice():[];
+  while(rows.length<5) rows.push({});
+  const legend = ACTION_CODES.map(([n,t])=>`<span class="lg">${n} &ndash; ${esc(t)}</span>`).join('');
+
+  const bodyRows = rows.map((r,i)=>{
+    const legendCell = i===0
+      ? `<td class="legend" rowspan="${rows.length}">${legend}</td>` : '';
+    return `<tr>
+      <td class="cell">${esc(r.from)||'&nbsp;'}</td>
+      <td class="cell">${esc(r.to)||'&nbsp;'}</td>
+      <td class="cell" style="text-align:center">${esc(r.action)||'&nbsp;'}</td>
+      <td class="cell" style="text-align:center">${esc(r.date)||'&nbsp;'}</td>
+      <td class="cell cell-send">${esc(r.sender)||'&nbsp;'}</td>
+      ${legendCell}
+    </tr>`;
+  }).join('');
+
+  return `<div class="slip"><div class="slip-pad">
+    <div class="slip-head">
+      <div class="slip-title">ROUTING SLIP</div>
+      <div class="slip-ctrl"><span class="lbl">PAOCC Control No.</span><span class="val">${esc(s.control)}</span></div>
+      <div class="slip-date"><span class="lbl">DATE:</span><span class="val">${esc(s.topdate)}</span></div>
+    </div>
+    <div class="slip-subj"><span class="lbl">SUBJECT:</span><span class="val">${esc(s.subject)}</span></div>
+
+    <table class="slip-tbl">
+      <colgroup>
+        <col class="col-from"><col class="col-to"><col class="col-act">
+        <col class="col-date"><col class="col-send"><col class="col-legend">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>FROM</th><th>TO</th><th>ACTION<br>REQUESTED</th>
+          <th>DATE</th><th>SENDERS NAME</th><th>ACTION REQUESTED</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${bodyRows}
+        <tr><td class="remarks" colspan="5">ADDITIONAL REMARKS:<span class="rm-text">${esc(s.remarks)}</span></td></tr>
+      </tbody>
+    </table>
+  </div></div>`;
+}
+
+/* ---------- Preview / Print ---------- */
+function previewSlip(){
+  document.getElementById('printArea').innerHTML = slipMarkup(gather());
+  document.getElementById('modal').classList.add('show');
+}
+function previewById(id){
+  const s = loadAll().find(x=>x.id===id); if(!s) return;
+  document.getElementById('printArea').innerHTML = slipMarkup(s);
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+
+/* ---------- Print Log ---------- */
+function printLog(id){
+  const s = loadAll().find(x=>x.id===id); if(!s) return;
+  const now = new Date();
+  const printedDate = now.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const printedTime = now.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('logPrintArea').innerHTML = `
+    <div class="log-sheet">
+      <div class="log-sheet-title">Routing Slip Print Log</div>
+      <div class="log-sheet-subtitle">PAOCC &middot; Message Center</div>
+      <div class="log-row">
+        <span class="log-lbl">Date Printed:</span>
+        <span class="log-val">${esc(printedDate)} &nbsp; ${esc(printedTime)}</span>
+      </div>
+      <div class="log-row">
+        <span class="log-lbl">PAOCC Control No.:</span>
+        <span class="log-val">${esc(s.control)||'&nbsp;'}</span>
+      </div>
+      <div class="log-row">
+        <span class="log-lbl">Subject:</span>
+        <span class="log-val">${esc(s.subject)||'&nbsp;'}</span>
+      </div>
+      <div class="log-sig-block">
+        <div class="log-sig-line"></div>
+        <div class="log-sig-label">Signature over Printed Name</div>
+      </div>
+      <div class="log-printed-note">Generated by PAOCC / Message Center Routing Slip System &mdash; For office records use only.</div>
+    </div>`;
+  document.getElementById('logModal').classList.add('show');
+}
+function closeLogModal(){ document.getElementById('logModal').classList.remove('show'); }
+
+/* ---------- Records ---------- */
+function renderRecords(){
+  const q = (document.getElementById('searchBox').value||'').toLowerCase();
+  let all = loadAll();
+  if(q) all = all.filter(s=>
+    (s.control||'').toLowerCase().includes(q) || (s.subject||'').toLowerCase().includes(q));
+
+  const host = document.getElementById('recordsList');
+  if(all.length===0){
+    host.innerHTML = `<div class="empty"><div class="big">No routing slips ${q?'match your search':'yet'}</div>
+      <div>${q?'Try a different term.':'Create one from the “New Slip” tab — it will be saved here.'}</div></div>`;
+    return;
+  }
+  host.innerHTML = all.map(s=>{
+    const days = pendingDaysCount(s);
+    const pendPill = days!==null
+      ? `<span class="pending-days ${s.status==='revision'?'pending-days-revision':''}">&#128336; ${days} day${days===1?'':'s'} ${s.status==='revision'?'in revision':'pending'}</span>` : '';
+    const stMap = {submitted:'sbadge-submitted',revision:'sbadge-revision',signed:'sbadge-signed',dispatched:'sbadge-dispatched'};
+    const stLabel = {submitted:'Submitted',revision:'Under Revision',signed:'Signed',dispatched:'Dispatched'};
+    const badge = s.status && stMap[s.status]
+      ? `<span class="sbadge ${stMap[s.status]}">${stLabel[s.status]}</span>` : '';
+    return `<div class="rec-card">
+      <div class="rec-card-top">
+        <div class="rec-card-info">
+          <div class="rec-card-title">
+            ${s.control?`<span class="ctrl-no">${esc(s.control)}</span> &nbsp;`:''}
+            <span class="rec-subj">${esc(s.subject)||'<span class="rec-meta">(no subject)</span>'}</span>
+          </div>
+          <div class="rec-card-meta">
+            ${(s.rows||[]).length} row${(s.rows||[]).length===1?'':' s'} &middot; Saved ${fmtDate(s.updatedAt||s.createdAt)}
+            &nbsp;${badge}${pendPill}
+          </div>
+        </div>
+        <div class="rec-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editRecord('${s.id}')">&#9998; Edit</button>
+          <button class="btn btn-ghost btn-sm" onclick="previewById('${s.id}')">&#128438; Print</button>
+          <button class="btn btn-ghost btn-sm" onclick="printLog('${s.id}')">&#128221; Print Log</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRecord('${s.id}')">&#128465; Delete</button>
+        </div>
+      </div>
+      <div class="rec-card-status">
+        <span class="rec-status-lbl">Status:</span>
+        <label class="status-check"><input type="checkbox" onchange="quickStatus('${s.id}','submitted',this)" ${s.status==='submitted'?'checked':''}>
+          <span class="sc-label">&#128229; Submitted</span></label>
+        <label class="status-check"><input type="checkbox" onchange="quickStatus('${s.id}','revision',this)" ${s.status==='revision'?'checked':''}>
+          <span class="sc-label">&#9999;&#65039; Under Revision</span></label>
+        <label class="status-check"><input type="checkbox" onchange="quickStatus('${s.id}','signed',this)" ${s.status==='signed'?'checked':''}>
+          <span class="sc-label">&#9989; Signed</span></label>
+        <label class="status-check"><input type="checkbox" onchange="quickStatus('${s.id}','dispatched',this)" ${s.status==='dispatched'?'checked':''}>
+          <span class="sc-label">&#128228; Dispatched</span></label>
+      </div>
+    </div>`;
+  }).join('');
+}
+function editRecord(id){
+  const s = loadAll().find(x=>x.id===id); if(!s) return;
+  editingId = id; setForm(s);
+  document.getElementById('editingFlag').style.display='flex';
+  document.getElementById('formTitle').textContent='Edit Routing Slip';
+  showTab('new');
+}
+function quickStatus(id, newSt, checkbox){
+  // Mutual exclusivity: uncheck all other status boxes in same card
+  const card = checkbox.closest('.rec-card-status');
+  card.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    if(cb !== checkbox) cb.checked = false;
+  });
+  const all = loadAll();
+  const idx = all.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  const prev = all[idx].status;
+  // If same status unchecked, clear it
+  all[idx].status = checkbox.checked ? newSt : '';
+  // Record submittedAt when first submitted
+  if(newSt==='submitted' && checkbox.checked && !all[idx].submittedAt){
+    all[idx].submittedAt = new Date().toISOString();
+  }
+  // Record revisionAt when first put under revision
+  if(newSt==='revision' && checkbox.checked && !all[idx].revisionAt){
+    all[idx].revisionAt = new Date().toISOString();
+  }
+  saveAll(all);
+  renderRecords();
+  toast(checkbox.checked ? 'Status updated: '+{submitted:'Submitted',revision:'Under Revision',signed:'Signed',dispatched:'Dispatched'}[newSt] : 'Status cleared.');
+}
+
+function deleteRecord(id){
+  if(!confirm('Delete this routing slip? This cannot be undone.')) return;
+  saveAll(loadAll().filter(x=>x.id!==id));
+  if(editingId===id) newSlip();
+  renderRecords();
+  toast('Slip deleted.');
+}
+
+/* ---------- Backup export / import ---------- */
+function exportBackup(){
+  const data = JSON.stringify(loadAll(),null,2);
+  const blob = new Blob([data],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'routing-slips-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Backup downloaded.');
+}
+function importBackup(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const incoming = JSON.parse(reader.result);
+      if(!Array.isArray(incoming)) throw 0;
+      const all = loadAll();
+      const ids = new Set(all.map(x=>x.id));
+      let added=0;
+      incoming.forEach(s=>{ if(s && s.id && !ids.has(s.id)){ all.push(s); added++; } });
+      all.sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
+      saveAll(all); renderRecords();
+      toast(added+' slip(s) imported.');
+    }catch(e){ toast('Could not read that backup file.'); }
+    ev.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- Boot ---------- */
+window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeLogModal(); } });
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+document.getElementById('logModal').addEventListener('click',e=>{ if(e.target.id==='logModal') closeLogModal(); });
+document.getElementById('rowsBody').addEventListener('input',function(e){
+  if(e.target && e.target.classList && e.target.classList.contains('r-date')){
+    e.target.value = formatMDY(e.target.value);
+  }
+});
+document.getElementById('f_topdate').addEventListener('input',function(e){
+  e.target.value = formatMDY(e.target.value);
+});
+buildCodesHelp();
+updateCount();
+newSlip();
+</script>
+</body>
+</html>
